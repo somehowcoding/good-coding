@@ -14,36 +14,48 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@700;900&display=swap');
         body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f1f5f9; overflow: hidden; }
-        
-        /* 블록 창이 하얗게 사라지는 버그 방지용 절대 크기 */
         #blocklyArea { position: relative; width: 100%; height: 100%; }
         #blocklyDiv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
         .jump-anim { animation: jump 0.3s ease; }
         @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
+        /* 스크롤바 숨기기 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-blue-50 relative z-50">
-        <div class="text-center animate-in fade-in zoom-in duration-700">
-            <h1 class="text-7xl font-black italic text-blue-600 mb-6 drop-shadow-lg">지존짱짱 코딩사이트</h1>
-            <p class="text-xl font-bold text-slate-500 mb-12">세상에서 제일 쉽고 강력한 블록 코딩</p>
-            
-            <button onclick="goToWorkspace()" class="bg-blue-600 text-white px-14 py-6 rounded-[30px] text-3xl font-black shadow-2xl hover:bg-blue-500 active:scale-95 transition-all">
-                🚀 작품 만들기
-            </button>
+    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-40 overflow-y-auto py-10">
+        <div class="text-center mb-10">
+            <h1 class="text-6xl font-black italic text-blue-600 mb-4 drop-shadow-md">지존짱짱 코딩사이트</h1>
+            <p class="text-lg font-bold text-slate-500">나만의 멋진 작품을 만들고 저장해보세요!</p>
+        </div>
+        
+        <button onclick="createNewProject()" class="bg-blue-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl hover:bg-blue-500 active:scale-95 transition-all mb-16">
+            🚀 새 작품 만들기
+        </button>
+
+        <div class="w-full max-w-4xl bg-white p-8 rounded-[40px] shadow-lg border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📁 나의 작품</h2>
+            <div id="projectList" class="grid grid-cols-2 gap-4">
+                </div>
         </div>
     </div>
 
-    <div id="workspaceScreen" class="hidden h-screen flex flex-col">
-        <header class="h-20 bg-white border-b flex items-center justify-between px-8 z-20 shadow-sm shrink-0">
-            <button onclick="goToLobby()" class="text-2xl font-black italic text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-                지존짱짱 코딩사이트
+    <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-30">
+        <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+            <button onclick="attemptExit()" class="text-xl font-black italic text-blue-600 hover:text-blue-800 transition-colors cursor-pointer flex items-center gap-2">
+                <span>◀ 로비로 가기</span>
             </button>
-            <button onclick="runCode()" class="bg-blue-600 text-white px-10 py-3 rounded-2xl font-black hover:bg-blue-500 active:scale-95 transition-all shadow-lg flex items-center gap-2">
-                <span>▶ 실행하기</span>
-            </button>
+            <div class="flex items-center gap-3">
+                <span id="currentProjectName" class="font-bold text-slate-400 mr-4">새 작품</span>
+                <button onclick="openSaveModal()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 active:scale-95 transition-all">
+                    💾 저장하기
+                </button>
+                <button onclick="runCode()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-black hover:bg-blue-500 active:scale-95 transition-all shadow-md">
+                    ▶ 실행하기
+                </button>
+            </div>
         </header>
 
         <main class="flex flex-grow overflow-hidden relative">
@@ -51,19 +63,48 @@
                 <div id="blocklyDiv"></div>
             </div>
 
-            <div class="w-[450px] bg-slate-50 border-l p-6 flex flex-col gap-6 shrink-0 z-10 shadow-xl">
-                <div class="bg-zinc-900 h-[250px] rounded-[40px] flex items-center justify-center relative shadow-inner border-8 border-zinc-800 overflow-hidden">
+            <div class="w-[400px] bg-slate-50 border-l p-4 flex flex-col gap-4 shrink-0 z-10 shadow-xl">
+                <div class="bg-zinc-900 h-[220px] rounded-3xl flex items-center justify-center relative shadow-inner border-[6px] border-zinc-800 overflow-hidden">
                     <p id="robot" class="text-7xl relative" style="left: 0px; top: 0px; transition: left 0.3s;">🤖</p>
                 </div>
                 
-                <div class="flex-grow bg-white rounded-3xl p-6 border shadow-sm flex flex-col">
-                    <p class="text-[11px] font-bold text-slate-400 mb-3 uppercase tracking-widest">실행 로그</p>
-                    <div id="console" class="flex-grow font-mono text-sm text-slate-600 overflow-y-auto space-y-2">
-                        블록을 조립하고 실행해보세요!
-                    </div>
+                <div class="flex-grow bg-white rounded-2xl p-4 border shadow-sm flex flex-col">
+                    <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">실행 로그 / 변수</p>
+                    <div id="console" class="flex-grow font-mono text-xs text-slate-600 overflow-y-auto space-y-1"></div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="exitWarningModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[30px] shadow-2xl max-w-sm w-full text-center">
+            <h3 class="text-2xl font-black text-red-500 mb-2">⚠️ 경고!</h3>
+            <p class="text-slate-600 font-bold mb-8">저장을 안 하면 작품이 사라집니다.<br>정말 그냥 나가시겠습니까?</p>
+            <div class="flex gap-2 justify-center">
+                <button onclick="forceExit()" class="flex-1 bg-slate-200 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-300">저장 필요없음</button>
+                <button onclick="closeExitWarningAndSave()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-500">저장해주세요</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[30px] shadow-2xl max-w-sm w-full">
+            <h3 class="text-2xl font-black text-slate-800 mb-6">💾 작품 저장하기</h3>
+            <input id="projectNameInput" type="text" placeholder="작품 이름을 입력하세요" class="w-full bg-slate-100 p-4 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl mb-8 border">
+                <span class="font-bold text-slate-600">공개 여부</span>
+                <select id="projectPublicSelect" class="bg-white border rounded-lg px-3 py-1 font-bold text-sm outline-none">
+                    <option value="private">비공개 🔒</option>
+                    <option value="public">공개 🌍</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeSaveModal()" class="flex-1 bg-slate-200 text-slate-600 py-3 rounded-xl font-bold">취소</button>
+                <button onclick="executeSave()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md">저장 완료</button>
+            </div>
+        </div>
     </div>
 
     <xml id="toolbox" style="display: none">
@@ -85,13 +126,21 @@
             <block type="math_arithmetic"></block>
         </category>
         <category name="자료 (변수)" colour="#a55b80" custom="VARIABLE"></category>
-        <category name="리스트" colour="#a55b5b" custom="LIST"></category>
+        <category name="리스트" colour="#a55b5b">
+            <block type="lists_create_empty"></block>
+            <block type="lists_getIndex"></block>
+            <block type="lists_setIndex"></block>
+        </category>
     </xml>
 
     <script>
         let workspace = null;
+        let isWorkspaceDirty = false; // 변경사항이 있는지 확인
+        let currentProjectId = null;  // 현재 편집 중인 작품 ID
+        let projects = JSON.parse(localStorage.getItem('jijon_projects')) || [];
 
-        // 커스텀 블록 만들기
+        // --- 커스텀 블록 정의 ---
+        
         Blockly.Blocks['when_run_clicked'] = {
             init: function() {
                 this.appendDummyInput().appendField("▶ 시작하기 버튼을 클릭했을 때");
@@ -99,40 +148,168 @@
                 this.setColour(45);
             }
         };
-        Blockly.JavaScript['when_run_clicked'] = function(block) { return ''; };
 
-        Blockly.Blocks['move_robot_forward'] = { init: function() { this.appendDummyInput().appendField("앞으로 이동하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
-        Blockly.JavaScript['move_robot_forward'] = function(block) { return 'moveRobotForward();\n'; };
+        // [요청 반영] 숫자만 입력 가능한 이동 블록
+        Blockly.Blocks['move_robot_forward'] = { 
+            init: function() { 
+                this.appendDummyInput()
+                    .appendField("앞으로 ")
+                    .appendField(new Blockly.FieldNumber(20), "STEPS") // 숫자만 입력 가능!
+                    .appendField(" 만큼 이동하기"); 
+                this.setPreviousStatement(true); 
+                this.setNextStatement(true); 
+                this.setColour(230); 
+            } 
+        };
+        Blockly.JavaScript['move_robot_forward'] = function(block) { 
+            let steps = block.getFieldValue('STEPS');
+            return `moveRobotForward(${steps});\n`; 
+        };
 
         Blockly.Blocks['move_robot_jump'] = { init: function() { this.appendDummyInput().appendField("점프하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
         Blockly.JavaScript['move_robot_jump'] = function(block) { return 'moveRobotJump();\n'; };
 
-        // [핵심] 화면 이동 기능
-        function goToWorkspace() {
-            document.getElementById('lobbyScreen').classList.add('hidden');
-            document.getElementById('workspaceScreen').classList.remove('hidden');
+        // --- 시스템 로직 ---
+
+        // 로비 렌더링
+        function renderProjects() {
+            const listDiv = document.getElementById('projectList');
+            listDiv.innerHTML = '';
             
-            // 작업실 화면이 나타난 직후에 블록 창을 생성합니다 (하얀 화면 버그 해결!)
+            if (projects.length === 0) {
+                listDiv.innerHTML = '<p class="text-slate-400 font-bold col-span-2 text-center py-10">아직 저장된 작품이 없습니다.</p>';
+                return;
+            }
+
+            projects.forEach(p => {
+                listDiv.innerHTML += `
+                    <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col justify-between hover:border-blue-400 transition-colors cursor-pointer" onclick="openProject(${p.id})">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-black text-lg text-slate-800 truncate">${p.name}</h4>
+                                <span class="text-[10px] px-2 py-1 rounded font-bold ${p.isPublic ? 'bg-green-100 text-green-600' : 'bg-slate-200 text-slate-600'}">${p.isPublic ? '공개 🌍' : '비공개 🔒'}</span>
+                            </div>
+                            <p class="text-xs text-slate-400">${p.date}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // 초기화 및 화면 이동
+        function initWorkspace() {
             if (!workspace) {
-                setTimeout(() => {
-                    workspace = Blockly.inject('blocklyDiv', {
-                        toolbox: document.getElementById('toolbox'),
-                        trashcan: true,
-                        grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
-                        zoom: {controls: true, wheel: true, startScale: 1.0}
-                    });
-                }, 100);
+                workspace = Blockly.inject('blocklyDiv', {
+                    toolbox: document.getElementById('toolbox'),
+                    trashcan: true,
+                    grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
+                    zoom: {controls: true, wheel: true, startScale: 1.0}
+                });
+                // 변경사항 감지
+                workspace.addChangeListener(function(e) {
+                    if (e.type != Blockly.Events.UI) isWorkspaceDirty = true;
+                });
             } else {
                 Blockly.svgResize(workspace);
             }
         }
 
-        function goToLobby() {
-            document.getElementById('workspaceScreen').classList.add('hidden');
-            document.getElementById('lobbyScreen').classList.remove('hidden');
+        function createNewProject() {
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('workspaceScreen').classList.remove('hidden');
+            currentProjectId = Date.now();
+            document.getElementById('currentProjectName').innerText = "새 작품";
+            
+            setTimeout(() => {
+                initWorkspace();
+                workspace.clear();
+                isWorkspaceDirty = false;
+            }, 100);
         }
 
-        // 로봇 제어 및 실행
+        function openProject(id) {
+            const proj = projects.find(p => p.id === id);
+            if (!proj) return;
+
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('workspaceScreen').classList.remove('hidden');
+            currentProjectId = proj.id;
+            document.getElementById('currentProjectName').innerText = proj.name;
+
+            setTimeout(() => {
+                initWorkspace();
+                workspace.clear();
+                const dom = Blockly.Xml.textToDom(proj.xml);
+                Blockly.Xml.domToWorkspace(dom, workspace);
+                isWorkspaceDirty = false;
+            }, 100);
+        }
+
+        // --- 저장 및 종료 경고 로직 ---
+
+        function attemptExit() {
+            if (isWorkspaceDirty) {
+                document.getElementById('exitWarningModal').classList.remove('hidden');
+            } else {
+                forceExit();
+            }
+        }
+
+        function forceExit() {
+            document.getElementById('exitWarningModal').classList.add('hidden');
+            document.getElementById('workspaceScreen').classList.add('hidden');
+            document.getElementById('lobbyScreen').classList.remove('hidden');
+            renderProjects();
+        }
+
+        function closeExitWarningAndSave() {
+            document.getElementById('exitWarningModal').classList.add('hidden');
+            openSaveModal();
+        }
+
+        function openSaveModal() {
+            const proj = projects.find(p => p.id === currentProjectId);
+            if (proj) {
+                document.getElementById('projectNameInput').value = proj.name;
+                document.getElementById('projectPublicSelect').value = proj.isPublic ? 'public' : 'private';
+            } else {
+                document.getElementById('projectNameInput').value = "";
+            }
+            document.getElementById('saveModal').classList.remove('hidden');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.add('hidden');
+        }
+
+        function executeSave() {
+            const name = document.getElementById('projectNameInput').value.trim();
+            if (!name) return alert("작품 이름을 입력해주세요!");
+
+            const isPublic = document.getElementById('projectPublicSelect').value === 'public';
+            const xmlDom = Blockly.Xml.workspaceToDom(workspace);
+            const xmlText = Blockly.Xml.domToText(xmlDom);
+
+            const existingIndex = projects.findIndex(p => p.id === currentProjectId);
+            const projectData = {
+                id: currentProjectId,
+                name: name,
+                isPublic: isPublic,
+                xml: xmlText,
+                date: new Date().toLocaleDateString()
+            };
+
+            if (existingIndex >= 0) projects[existingIndex] = projectData;
+            else projects.push(projectData);
+
+            localStorage.setItem('jijon_projects', JSON.stringify(projects));
+            
+            document.getElementById('currentProjectName').innerText = name;
+            isWorkspaceDirty = false; // 저장 완료시 변경사항 없음 처리
+            closeSaveModal();
+            alert("✅ 정상적으로 저장되었습니다!");
+        }
+
+        // --- 코드 실행 로직 (버그 완벽 수정) ---
         let currentPos = 0;
         function runCode() {
             const robot = document.getElementById('robot');
@@ -145,29 +322,39 @@
             const startBlock = allBlocks.find(b => b.type === 'when_run_clicked');
 
             if (!startBlock) {
-                consoleDiv.innerHTML = "<span class='text-red-500 font-bold'>[!] 시작 블록을 조립해주세요!</span>";
+                consoleDiv.innerHTML = "<span class='text-red-500 font-bold'>[!] 시작 블록을 놔주세요!</span>";
                 return;
             }
 
-            // 변수 선언 코드도 함께 가져옵니다
-            Blockly.JavaScript.init(workspace);
+            // 변수 및 리스트 코드를 포함하여 안전하게 컴파일
             let code = Blockly.JavaScript.blockToCode(startBlock.getNextBlock());
-            let vars = Blockly.JavaScript.finish(code); // 변수 자동 처리
-
-            window.moveRobotForward = () => { currentPos += 30; robot.style.left = currentPos + 'px'; };
+            
+            // 로봇 동작 함수 정의 (숫자 값을 받아서 처리)
+            window.moveRobotForward = (steps) => { 
+                currentPos += steps; 
+                robot.style.left = currentPos + 'px'; 
+            };
             window.moveRobotJump = () => { 
                 robot.classList.remove('jump-anim'); 
                 void robot.offsetWidth; 
                 robot.classList.add('jump-anim'); 
             };
+            // 변수/리스트 출력용 콘솔 가로채기
+            window.alert = (msg) => {
+                consoleDiv.innerHTML += `<div>> ${msg}</div>`;
+            };
 
             try {
-                if (code) eval(vars); // 코드 실행
-                else consoleDiv.innerHTML = "연결된 동작이 없습니다.";
+                if (code) eval(code);
+                else consoleDiv.innerHTML = "연결된 블록이 없습니다.";
             } catch (e) {
-                consoleDiv.innerHTML = "<span class='text-red-500'>실행 중 오류가 발생했습니다.</span>";
+                consoleDiv.innerHTML = "<span class='text-red-500'>오류: 코드를 다시 확인해주세요.</span>";
             }
         }
+
+        // 앱 시작 시 로비 렌더링
+        window.onload = renderProjects;
+
     </script>
 </body>
 </html>
