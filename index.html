@@ -1,43 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지존짱짱 코딩사이트</title>
+    
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
     <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
     <script src="https://unpkg.com/blockly/msg/ko.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@900&display=swap');
-        body { margin: 0; font-family: 'Pretendard', sans-serif; overflow: hidden; background-color: #f1f5f9; }
+        body { margin: 0; font-family: 'Pretendard', sans-serif; overflow: hidden; background-color: #f1f5f9; height: 100vh; }
         #blocklyDiv { width: 100%; height: 100%; }
         .hidden { display: none !important; }
+        .jump-anim { animation: jump 0.3s ease; }
+        @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
     </style>
 </head>
 <body>
 
-    <div id="lobby" class="h-screen w-full flex flex-col items-center justify-center p-10 overflow-y-auto">
-        <h1 class="text-6xl font-black text-blue-600 mb-2 italic">지존짱짱 코딩사이트</h1>
-        <p class="text-slate-400 font-bold mb-10">나만의 멋진 작품을 만들어보세요! 🚀</p>
+    <div id="lobby" class="h-screen w-full flex flex-col items-center justify-center p-6 overflow-y-auto bg-white">
+        <h1 class="text-5xl font-black text-blue-600 mb-2 italic">지존짱짱 코딩사이트</h1>
+        <p class="text-slate-400 font-bold mb-10 text-lg">파일 이름은 index.html이 국룰! 🦾</p>
         
-        <button onclick="startNewProject()" class="bg-blue-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all mb-12">
+        <button onclick="startNew()" class="bg-blue-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-2xl hover:scale-105 active:scale-95 transition-all mb-12">
             🚀 새 작품 만들기
         </button>
 
-        <div class="w-full max-w-2xl bg-white p-8 rounded-[30px] shadow-lg border border-slate-200">
-            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📁 나의 작품</h2>
-            <div id="projectList" class="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto">
+        <div class="w-full max-w-2xl bg-slate-50 p-8 rounded-[35px] border-4 border-slate-100 shadow-inner">
+            <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <span>📁 나의 작품 리스트</span>
+            </h2>
+            <div id="projectList" class="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto">
                 </div>
         </div>
     </div>
 
-    <div id="workspace" class="hidden h-screen flex flex-col">
-        <header class="h-16 bg-white border-b flex items-center justify-between px-6 shadow-sm">
-            <button onclick="location.reload()" class="text-xl font-black text-blue-600">◀ 로비로 가기</button>
+    <div id="workspace" class="hidden h-screen flex flex-col bg-white">
+        <header class="h-16 border-b flex items-center justify-between px-6 bg-white/80 backdrop-blur-md z-10">
+            <button onclick="location.reload()" class="text-xl font-black text-blue-600 hover:opacity-70">◀ 로비로</button>
             <div class="flex gap-3">
-                <button onclick="saveMyWork()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold">💾 저장</button>
-                <button onclick="runCode()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-black shadow-md">▶ 실행</button>
+                <button onclick="saveWork()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700">💾 저장</button>
+                <button onclick="runCode()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-black shadow-lg hover:bg-blue-500">▶ 실행</button>
             </div>
         </header>
 
@@ -45,11 +52,14 @@
             <div class="flex-grow relative">
                 <div id="blocklyDiv"></div>
             </div>
-            <div class="w-[350px] bg-slate-50 border-l p-4 flex flex-col gap-4">
-                <div class="bg-zinc-900 h-48 rounded-3xl flex items-center justify-center text-7xl border-[6px] border-zinc-800 overflow-hidden">
+            <div class="w-[320px] bg-slate-100 border-l p-4 flex flex-col gap-4 shadow-2xl">
+                <div class="bg-zinc-900 h-48 rounded-[2rem] flex items-center justify-center text-7xl border-[6px] border-zinc-800 overflow-hidden shadow-inner">
                     <span id="robot" class="relative" style="left:0; transition: 0.3s;">🤖</span>
                 </div>
-                <div id="log" class="flex-grow bg-white rounded-2xl p-4 border text-xs font-mono overflow-y-auto"></div>
+                <div class="flex-grow bg-white rounded-2xl p-4 border shadow-sm flex flex-col overflow-hidden">
+                    <p class="text-[10px] font-black text-slate-300 mb-2 tracking-widest uppercase">Console</p>
+                    <div id="log" class="flex-grow font-mono text-[11px] text-slate-600 overflow-y-auto leading-relaxed"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -60,41 +70,30 @@
             <block type="move"></block>
             <block type="jump"></block>
         </category>
+        <category name="변수" colour="#a55b80" custom="VARIABLE"></category>
     </xml>
 
     <script>
         // 블록 정의
-        Blockly.Blocks['start'] = { init: function() { this.appendDummyInput().appendField("▶ 시작하기 버튼 클릭"); this.setNextStatement(true); this.setColour(45); } };
+        Blockly.Blocks['start'] = { init: function() { this.appendDummyInput().appendField("▶ 시작 버튼 클릭"); this.setNextStatement(true); this.setColour(45); } };
         Blockly.JavaScript['start'] = function(block) { return ''; };
-        Blockly.Blocks['move'] = { init: function() { this.appendDummyInput().appendField("앞으로 이동"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        Blockly.Blocks['move'] = { init: function() { this.appendDummyInput().appendField("앞으로 쓱- 이동"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
         Blockly.JavaScript['move'] = function(block) { return 'move();\n'; };
-        Blockly.Blocks['jump'] = { init: function() { this.appendDummyInput().appendField("점프!"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        Blockly.Blocks['jump'] = { init: function() { this.appendDummyInput().appendField("위로 폴짝 점프"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
         Blockly.JavaScript['jump'] = function(block) { return 'jump();\n'; };
 
         let workspace = null;
-        let projects = JSON.parse(localStorage.getItem('my_jijon_projects')) || [];
+        let projects = JSON.parse(localStorage.getItem('jijon_v1')) || [];
 
-        // 로비에 작품 목록 그리기
-        function renderProjects() {
-            const listDiv = document.getElementById('projectList');
+        function renderList() {
+            const list = document.getElementById('projectList');
             if (projects.length === 0) {
-                listDiv.innerHTML = '<p class="text-slate-400 text-center py-4 font-bold">아직 만든 작품이 없어요!</p>';
+                list.innerHTML = '<div class="text-center py-10 text-slate-300 font-bold">아직 저장된 작품이 없어요!</div>';
                 return;
             }
-            listDiv.innerHTML = '';
-            projects.forEach((p, index) => {
-                const item = document.createElement('div');
-                item.className = "bg-slate-50 p-4 rounded-xl border-2 border-transparent hover:border-blue-400 cursor-pointer flex justify-between items-center transition-all";
-                item.innerHTML = `<div><b class="text-lg">${p.name}</b><br><span class="text-[10px] text-slate-400">${p.date}</span></div><span>📂</span>`;
-                item.onclick = () => loadProject(index);
-                listDiv.appendChild(item);
-            });
-        }
-
-        // 새 작품 시작
-        function startNewProject() {
-            document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('workspace').classList.remove('hidden');
-            if (!workspace) {
-                workspace = Blockly.inject('blocklyDiv', { toolbox: document.getElementById('toolbox') });
-            }
+            list.innerHTML = '';
+            projects.forEach((p, i) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border-2 border-slate-100 hover:border-blue-400 cursor-pointer flex justify-between items-center transition-all shadow-sm group";
+                card.innerHTML = `<div><b class="text-lg text-slate-700">${p.name}</b><br><span class="text-[10px] text-slate-400">${p.date}</span></div><span class="group-hover:scale-125 transition-transform">🚀</span>`;
+                card.
