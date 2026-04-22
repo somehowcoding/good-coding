@@ -24,24 +24,24 @@
 </head>
 <body>
 
-    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-40 overflow-y-auto py-10">
+    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-50 overflow-y-auto py-10">
         <div class="text-center mb-10">
             <h1 class="text-6xl font-black italic text-blue-600 mb-4 drop-shadow-md">지존짱짱 코딩사이트</h1>
-            <p class="text-slate-400 font-bold mb-8">버그 잡는 천재 개발자 유저님의 공간 🤖</p>
+            <p class="text-slate-400 font-bold mb-8 italic">버그는 잡으라고 있는 법! 🦾</p>
             <button onclick="createNewProject()" class="bg-blue-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl hover:bg-blue-500 active:scale-95 transition-all">
                 🚀 새 작품 만들기
             </button>
         </div>
         
         <div class="w-full max-w-4xl bg-white p-8 rounded-[40px] shadow-lg border border-slate-100">
-            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📁 나의 작품</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📁 나의 작품 리스트</h2>
             <div id="projectList" class="grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 
-    <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-30">
-        <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20 shadow-sm">
-            <button onclick="attemptExit()" class="text-xl font-black italic text-blue-600 hover:text-blue-800 flex items-center gap-2">
+    <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-40">
+        <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+            <button onclick="attemptExit()" class="text-xl font-black italic text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2">
                 <span>◀ 로비로 가기</span>
             </button>
             <div class="flex items-center gap-3">
@@ -56,21 +56,19 @@
                 <div id="blocklyDiv"></div>
             </div>
 
-            <div class="w-[400px] bg-slate-50 border-l p-4 flex flex-col gap-4 shadow-xl">
+            <div class="w-[400px] bg-slate-50 border-l p-4 flex flex-col gap-4 shadow-xl shrink-0">
                 <div class="bg-zinc-900 h-[220px] rounded-3xl flex items-center justify-center relative shadow-inner border-[6px] border-zinc-800 overflow-hidden">
                     <p id="robot" class="text-7xl relative" style="left: 0px; top: 0px; transition: left 0.3s;">🤖</p>
                 </div>
                 <div class="flex-grow bg-white rounded-2xl p-4 border shadow-sm flex flex-col">
-                    <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">실행 결과</p>
+                    <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">실행 결과 창</p>
                     <div id="console" class="flex-grow font-mono text-xs text-slate-600 overflow-y-auto space-y-1"></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="exitWarningModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div id="exitWarningModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-[30px] shadow-2xl max-w-sm w-full text-center">
-            <h3 class="text-2xl font-black text-red-500 mb-2">⚠️ 경고!</h3>
-            <p class="text-slate-600 font-bold mb-8">저장을 안 하면 작품이 사라집니다.<br>정말 그냥 나가시겠습니까?</p>
-            <div class="flex gap-2">
-                <button onclick="forceExit()" class="flex-1 bg-slate-200 py-3 rounded-xl font-bold">
+            <h3 class="text-2xl font-black text-red-500 mb-2">⚠️ 잠깐만요!</h3>
+            <p class="text-slate-600 font-bold mb-8">저
