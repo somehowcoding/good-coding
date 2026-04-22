@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지존짱짱 쉽고 간편한 코딩사이트</title>
+    
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/msg/ko.js"></script> <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@700;900&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f4f8; }
+        .blocklySvg { border-radius: 15px; border: 2px solid #e2e8f0; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4">
+
+    <header class="flex items-center justify-between pb-4 border-b-2 border-gray-200 mb-4">
+        <h1 class="text-3xl font-black italic tracking-tighter text-blue-600">지존짱짱 코딩사이트</h1>
+        <div class="flex gap-2">
+            <button onclick="runCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-black shadow-lg active:scale-95 transition-all">
+                ▶ 실행하기
+            </button>
+            <button onclick="document.documentElement.classList.toggle('dark')" class="p-3 rounded-full bg-white shadow-md border active:scale-90 transition-all">
+                🌓 테마
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow flex gap-4 overflow-hidden">
+        
+        <div id="blocklyArea" class="flex-grow h-full relative">
+            <div id="blocklyDiv" class="absolute inset-0"></div>
+        </div>
+
+        <div class="w-[30%] h-full flex flex-col gap-4">
+            <div class="flex-grow bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative">
+                <h2 class="text-xl font-black mb-4 text-gray-800">실행창 (무대)</h2>
+                <div id="stage" class="w-full h-[60%] bg-zinc-900 rounded-xl flex items-center justify-center border-4 border-zinc-900 overflow-hidden relative">
+                    <p id="robot" class="text-8xl transition-all duration-300 relative" style="left: 0px; top: 0px;">🤖</p>
+                </div>
+                <div class="absolute bottom-6 left-6 right-6">
+                    <p class="text-sm font-bold text-gray-400 mb-1 uppercase tracking-widest">Console Output</p>
+                    <div id="console" class="w-full h-24 bg-gray-50 rounded-xl p-4 font-mono text-sm overflow-y-auto border border-gray-100 text-gray-700">
+                        알림이나 변수 값이 여기에 나옵니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-4 text-center text-gray-400 text-xs font-bold tracking-[0.4em] uppercase py-2 border-t-2 border-gray-100">
+        Made by 어쩌다코딩
+    </footer>
+
+    <xml id="toolbox" style="display: none">
+        <category name="움직임" colour="#5b67a5">
+            <block type="move_robot_forward"></block>
+            <block type="move_robot_jump"></block>
+        </category>
+        <category name="제어" colour="#5ba55b">
+            <block type="controls_repeat_ext">
+                <value name="TIMES">
+                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                </value>
+            </block>
+            <block type="controls_if"></block>
+        </category>
+        <category name="계산/변수" colour="#a55b80">
+            <block type="math_number"></block>
+            <block type="text_print"></block>
+            <block type="text"></block>
+        </category>
+    </xml>
+
+    <script>
+        // 1. 커스텀 블록 정의 (움직임)
+        Blockly.Blocks['move_robot_forward'] = {
+          init: function() {
+            this.appendDummyInput().appendField("로봇을 앞으로 20px 이동");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(230);
+          }
+        };
+
+        Blockly.JavaScript['move_robot_forward'] = function(block) {
+          return 'moveRobotForward();\n';
+        };
+
+        Blockly.Blocks['move_robot_jump'] = {
+          init: function() {
+            this.appendDummyInput().appendField("로봇을 점프시키기");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(230);
+          }
+        };
+
+        Blockly.JavaScript['move_robot_jump'] = function(block) {
+          return 'moveRobotJump();\n';
+        };
+
+        // 2. Blockly 위젯 초기화
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: document.getElementById('toolbox'),
+            scrollbars: true,
+            trashcan: true,
+            zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 }
+        });
+
+        // 3. 실행 함수 정의 (로봇 움직이기)
+        const robot = document.getElementById('robot');
+        const consoleDiv = document.getElementById('console');
+        let currentPos = 0;
+
+        function runCode() {
+            // 조립된 블록을 자바스크립트 코드로 변환
+            window.LoopTrap = 1000;
+            Blockly.JavaScript.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap == 0) throw "Infinite loop.";\n';
+            const code = Blockly.JavaScript.workspaceToCode(workspace);
+            
+            // 초기화
+            currentPos = 0;
+            robot.style.left = '0px';
+            robot.style.top = '0px';
+            consoleDiv.innerHTML = "";
+
+            // 커스텀 함수 정의 (실행창 제어)
+            window.moveRobotForward = function() {
+                currentPos += 20;
+                robot.style.left = currentPos + 'px';
+            };
+            window.moveRobotJump = function() {
+                robot.classList.add('jump-anim');
+                robot.style.top = '-50px';
+                setTimeout(() => {
+                    robot.style.top = '0px';
+                }, 150);
+            };
+            
+            // alert 대신 콘솔에 출력하도록 오버라이딩
+            window.print = function(text) {
+                consoleDiv.innerHTML += `> ${text}<br>`;
+            };
+
+            // 코드 실행
+            try {
+                eval(code); 
+            } catch (e) {
+                consoleDiv.innerHTML = `<span class="text-red-500 font-bold">ERROR: 코드를 실행할 수 없습니다.</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
