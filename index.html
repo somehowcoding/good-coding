@@ -1,78 +1,81 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지존짱짱 코딩사이트</title>
-    
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
     <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
     <script src="https://unpkg.com/blockly/msg/ko.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f8fafc; overflow: hidden; height: 100vh; }
-        #blocklyArea { width: 100%; height: 100%; position: relative; background: #ffffff; }
-        #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        body { margin: 0; font-family: sans-serif; overflow: hidden; }
+        #blocklyDiv { width: 100%; height: calc(100vh - 60px); }
         .hidden { display: none !important; }
-        .jump-anim { animation: jump 0.3s ease; }
-        @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
-        /* 툴박스 글씨 굵게 */
-        .blocklyTreeLabel { font-weight: 700 !important; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100">
 
-    <div id="errorConsole" class="fixed top-0 left-0 w-full bg-red-600 text-white text-[10px] p-2 z-[9999] hidden font-mono">
-        <b>[시스템 에러 발생]</b> <span id="errorMsg"></span>
+    <div id="lobby" class="h-screen flex flex-col items-center justify-center">
+        <h1 class="text-4xl font-black text-blue-600 mb-8">지존짱짱 코딩사이트</h1>
+        <button onclick="startApp()" class="bg-blue-600 text-white px-10 py-5 rounded-full text-2xl font-bold shadow-lg hover:bg-blue-500">
+            🚀 새 작품 만들기
+        </button>
     </div>
 
-    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-white relative z-50">
-        <div class="text-center">
-            <h1 class="text-6xl font-black italic text-blue-600 mb-2 drop-shadow-sm">지존짱짱 코딩사이트</h1>
-            <p class="text-slate-400 font-bold mb-12">포기를 모르는 유저님을 위한 특별판 🦾</p>
-            <button onclick="safeStart()" class="bg-blue-600 text-white px-14 py-6 rounded-full text-3xl font-black shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                🚀 새 작품 만들기
-            </button>
-        </div>
-        
-        <div id="saveListArea" class="mt-12 w-full max-w-2xl px-6 hidden">
-            <h2 class="text-xl font-black text-slate-800 mb-4 border-b pb-2">📂 저장된 작품</h2>
-            <div id="projectList" class="grid grid-cols-1 gap-3 max-h-[30vh] overflow-y-auto"></div>
-        </div>
-    </div>
-
-    <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-40 bg-white">
-        <header class="h-16 bg-white border-b flex items-center justify-between px-6 shadow-sm">
-            <button onclick="location.reload()" class="text-xl font-black italic text-blue-600 hover:text-blue-800 flex items-center gap-2">
-                <span>◀ 로비로</span>
-            </button>
-            <div class="flex items-center gap-3">
-                <button onclick="saveProject()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 transition-all text-sm">💾 저장</button>
-                <button onclick="runCode()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-black hover:bg-blue-500 shadow-md transition-all">▶ 실행</button>
-            </div>
+    <div id="workspace" class="hidden h-screen flex flex-col">
+        <header class="h-[60px] bg-white border-b flex items-center px-6 justify-between">
+            <button onclick="location.reload()" class="font-bold text-blue-600">◀ 나가기</button>
+            <button onclick="runCode()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">▶ 실행하기</button>
         </header>
-
-        <main class="flex flex-grow overflow-hidden">
-            <div id="blocklyArea">
-                <div id="blocklyDiv"></div>
-            </div>
-
-            <div class="w-[350px] bg-slate-50 border-l p-4 flex flex-col gap-4 shadow-xl shrink-0">
-                <div class="bg-zinc-900 h-52 rounded-[2.5rem] flex items-center justify-center relative shadow-inner border-[6px] border-zinc-800 overflow-hidden">
-                    <p id="robot" class="text-7xl relative" style="left: 0px; top: 0px; transition: left 0.3s;">🤖</p>
+        <div class="flex flex-grow">
+            <div id="blocklyDiv"></div>
+            <div class="w-[300px] bg-slate-50 border-l p-4">
+                <div class="bg-black h-40 rounded-xl flex items-center justify-center text-5xl">
+                    <span id="robot">🤖</span>
                 </div>
-                <div class="flex-grow bg-white rounded-3xl p-4 border shadow-sm flex flex-col overflow-hidden">
-                    <p class="text-[10px] font-black text-slate-300 mb-2 uppercase tracking-tighter">Console Log</p>
-                    <div id="console" class="flex-grow font-mono text-[11px] text-slate-600 overflow-y-auto space-y-1"></div>
-                </div>
+                <div id="log" class="mt-4 text-xs font-mono text-slate-500 overflow-y-auto h-40 bg-white p-2 border"></div>
             </div>
-        </main>
+        </div>
     </div>
 
     <xml id="toolbox" style="display: none">
-        <category name="시작" colour="#ffbb00"><block type="start_block"></block></category>
+        <category name="시작" colour="#ffbb00"><block type="start"></block></category>
         <category name="동작" colour="#5b67a5">
-            <block type="move_forward"><value name="VALUE"><shadow type="math_number"><field name="NUM
+            <block type="move"></block>
+            <block type="jump"></block>
+        </category>
+    </xml>
+
+    <script>
+        // 블록 만들기
+        Blockly.Blocks['start'] = { init: function() { this.appendDummyInput().appendField("▶ 시작할 때"); this.setNextStatement(true); this.setColour(45); } };
+        Blockly.JavaScript['start'] = function(block) { return ''; };
+        Blockly.Blocks['move'] = { init: function() { this.appendDummyInput().appendField("앞으로 20만큼 가기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        Blockly.JavaScript['move'] = function(block) { return 'move();\n'; };
+        Blockly.Blocks['jump'] = { init: function() { this.appendDummyInput().appendField("점프하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
+        Blockly.JavaScript['jump'] = function(block) { return 'jump();\n'; };
+
+        let demoWorkspace = null;
+
+        function startApp() {
+            // 화면 전환
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('workspace').classList.remove('hidden');
+
+            // 블록 창 띄우기
+            if (!demoWorkspace) {
+                demoWorkspace = Blockly.inject('blocklyDiv', {
+                    toolbox: document.getElementById('toolbox')
+                });
+            }
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        function runCode() {
+            const log = document.getElementById('log');
+            const robot = document.getElementById('robot');
+            log.innerHTML = "시작!<br>";
+            
+            window.move = () => { log.innerHTML += "이동 완료<br>"; };
+            window.jump = () => { log.innerHTML += "
