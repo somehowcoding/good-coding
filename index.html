@@ -13,41 +13,58 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f1f5f9; }
-        /* 블록 조립소의 최소 높이를 확보합니다 */
-        #blocklyContainer { position: relative; width: 100%; height: calc(100vh - 80px); }
-        #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f1f5f9; overflow: hidden; }
+        
+        /* 블록 창이 하얗게 사라지는 버그 방지용 절대 크기 */
+        #blocklyArea { position: relative; width: 100%; height: 100%; }
+        #blocklyDiv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
         .jump-anim { animation: jump 0.3s ease; }
         @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
     </style>
 </head>
-<body class="h-screen flex flex-col">
+<body>
 
-    <header class="h-20 bg-white border-b flex items-center justify-between px-8 z-20 shadow-sm">
-        <h1 class="text-2xl font-black italic text-blue-600">지존짱짱 코딩사이트</h1>
-        <button onclick="runCode()" class="bg-blue-600 text-white px-10 py-3 rounded-2xl font-black hover:bg-blue-700 active:scale-95 transition-all shadow-lg">
-            ▶ 실행하기
-        </button>
-    </header>
-
-    <main class="flex flex-grow overflow-hidden">
-        <div id="blocklyContainer" class="flex-grow bg-white">
-            <div id="blocklyDiv"></div>
-        </div>
-
-        <div class="w-[400px] bg-slate-50 border-l p-6 flex flex-col gap-6">
-            <div class="bg-zinc-900 aspect-video rounded-[40px] flex items-center justify-center relative shadow-2xl border-8 border-zinc-800">
-                <p id="robot" class="text-8xl relative" style="left: 0px; transition: left 0.3s;">🤖</p>
-            </div>
+    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-blue-50 relative z-50">
+        <div class="text-center animate-in fade-in zoom-in duration-700">
+            <h1 class="text-7xl font-black italic text-blue-600 mb-6 drop-shadow-lg">지존짱짱 코딩사이트</h1>
+            <p class="text-xl font-bold text-slate-500 mb-12">세상에서 제일 쉽고 강력한 블록 코딩</p>
             
-            <div class="flex-grow bg-white rounded-3xl p-6 border shadow-inner overflow-hidden flex flex-col">
-                <p class="text-[11px] font-bold text-slate-400 mb-3 uppercase tracking-widest">실행 로그</p>
-                <div id="console" class="flex-grow font-mono text-sm text-slate-600 overflow-y-auto space-y-1">
-                    준비 완료. 블록을 조립해보세요!
+            <button onclick="goToWorkspace()" class="bg-blue-600 text-white px-14 py-6 rounded-[30px] text-3xl font-black shadow-2xl hover:bg-blue-500 active:scale-95 transition-all">
+                🚀 작품 만들기
+            </button>
+        </div>
+    </div>
+
+    <div id="workspaceScreen" class="hidden h-screen flex flex-col">
+        <header class="h-20 bg-white border-b flex items-center justify-between px-8 z-20 shadow-sm shrink-0">
+            <button onclick="goToLobby()" class="text-2xl font-black italic text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                지존짱짱 코딩사이트
+            </button>
+            <button onclick="runCode()" class="bg-blue-600 text-white px-10 py-3 rounded-2xl font-black hover:bg-blue-500 active:scale-95 transition-all shadow-lg flex items-center gap-2">
+                <span>▶ 실행하기</span>
+            </button>
+        </header>
+
+        <main class="flex flex-grow overflow-hidden relative">
+            <div id="blocklyArea" class="flex-grow bg-white">
+                <div id="blocklyDiv"></div>
+            </div>
+
+            <div class="w-[450px] bg-slate-50 border-l p-6 flex flex-col gap-6 shrink-0 z-10 shadow-xl">
+                <div class="bg-zinc-900 h-[250px] rounded-[40px] flex items-center justify-center relative shadow-inner border-8 border-zinc-800 overflow-hidden">
+                    <p id="robot" class="text-7xl relative" style="left: 0px; top: 0px; transition: left 0.3s;">🤖</p>
+                </div>
+                
+                <div class="flex-grow bg-white rounded-3xl p-6 border shadow-sm flex flex-col">
+                    <p class="text-[11px] font-bold text-slate-400 mb-3 uppercase tracking-widest">실행 로그</p>
+                    <div id="console" class="flex-grow font-mono text-sm text-slate-600 overflow-y-auto space-y-2">
+                        블록을 조립하고 실행해보세요!
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <xml id="toolbox" style="display: none">
         <category name="시작" colour="#ffbb00">
@@ -61,11 +78,20 @@
             <block type="controls_repeat_ext">
                 <value name="TIMES"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
             </block>
+            <block type="controls_if"></block>
         </category>
+        <category name="계산" colour="#5b80a5">
+            <block type="math_number"></block>
+            <block type="math_arithmetic"></block>
+        </category>
+        <category name="자료 (변수)" colour="#a55b80" custom="VARIABLE"></category>
+        <category name="리스트" colour="#a55b5b" custom="LIST"></category>
     </xml>
 
     <script>
-        // 커스텀 블록 정의
+        let workspace = null;
+
+        // 커스텀 블록 만들기
         Blockly.Blocks['when_run_clicked'] = {
             init: function() {
                 this.appendDummyInput().appendField("▶ 시작하기 버튼을 클릭했을 때");
@@ -81,23 +107,32 @@
         Blockly.Blocks['move_robot_jump'] = { init: function() { this.appendDummyInput().appendField("점프하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
         Blockly.JavaScript['move_robot_jump'] = function(block) { return 'moveRobotJump();\n'; };
 
-        // [핵심] 라이브러리 로드가 완료되면 실행되도록 보장
-        window.onload = function() {
-            try {
-                const workspace = Blockly.inject('blocklyDiv', {
-                    toolbox: document.getElementById('toolbox'),
-                    trashcan: true,
-                    grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
-                    zoom: {controls: true, wheel: true, startScale: 1.0}
-                });
-                window.workspace = workspace; // 전역 변수 설정
-            } catch (e) {
-                console.error("Blockly 초기화 실패:", e);
-                document.getElementById('console').innerHTML = "오류: 라이브러리를 불러오지 못했습니다.";
+        // [핵심] 화면 이동 기능
+        function goToWorkspace() {
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('workspaceScreen').classList.remove('hidden');
+            
+            // 작업실 화면이 나타난 직후에 블록 창을 생성합니다 (하얀 화면 버그 해결!)
+            if (!workspace) {
+                setTimeout(() => {
+                    workspace = Blockly.inject('blocklyDiv', {
+                        toolbox: document.getElementById('toolbox'),
+                        trashcan: true,
+                        grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
+                        zoom: {controls: true, wheel: true, startScale: 1.0}
+                    });
+                }, 100);
+            } else {
+                Blockly.svgResize(workspace);
             }
-        };
+        }
 
-        // 로봇 제어 함수
+        function goToLobby() {
+            document.getElementById('workspaceScreen').classList.add('hidden');
+            document.getElementById('lobbyScreen').classList.remove('hidden');
+        }
+
+        // 로봇 제어 및 실행
         let currentPos = 0;
         function runCode() {
             const robot = document.getElementById('robot');
@@ -106,15 +141,33 @@
             currentPos = 0;
             robot.style.left = '0px';
 
-            const allBlocks = window.workspace.getTopBlocks(false);
+            const allBlocks = workspace.getTopBlocks(false);
             const startBlock = allBlocks.find(b => b.type === 'when_run_clicked');
 
             if (!startBlock) {
-                consoleDiv.innerHTML = "<span class='text-red-500 font-bold'>[!] '시작하기' 블록을 먼저 놓아주세요.</span>";
+                consoleDiv.innerHTML = "<span class='text-red-500 font-bold'>[!] 시작 블록을 조립해주세요!</span>";
                 return;
             }
 
-            const code = Blockly.JavaScript.blockToCode(startBlock.getNextBlock());
+            // 변수 선언 코드도 함께 가져옵니다
+            Blockly.JavaScript.init(workspace);
+            let code = Blockly.JavaScript.blockToCode(startBlock.getNextBlock());
+            let vars = Blockly.JavaScript.finish(code); // 변수 자동 처리
 
             window.moveRobotForward = () => { currentPos += 30; robot.style.left = currentPos + 'px'; };
-            window.
+            window.moveRobotJump = () => { 
+                robot.classList.remove('jump-anim'); 
+                void robot.offsetWidth; 
+                robot.classList.add('jump-anim'); 
+            };
+
+            try {
+                if (code) eval(vars); // 코드 실행
+                else consoleDiv.innerHTML = "연결된 동작이 없습니다.";
+            } catch (e) {
+                consoleDiv.innerHTML = "<span class='text-red-500'>실행 중 오류가 발생했습니다.</span>";
+            }
+        }
+    </script>
+</body>
+</html>
