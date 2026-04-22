@@ -13,34 +13,33 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f1f5f9; overflow: hidden; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f1f5f9; overflow: hidden; height: 100vh; }
         #blocklyArea { position: relative; width: 100%; height: 100%; }
-        #blocklyDiv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
         .jump-anim { animation: jump 0.3s ease; }
         @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
         .hidden { display: none !important; }
-        .blocklyTreeLabel { font-weight: 700; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-50 overflow-y-auto py-10">
+    <div id="lobbyScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-50">
         <div class="text-center mb-10">
             <h1 class="text-6xl font-black italic text-blue-600 mb-4 drop-shadow-md">지존짱짱 코딩사이트</h1>
-            <p class="text-slate-400 font-bold mb-8 italic">버그는 잡으라고 있는 법! 🦾</p>
+            <p class="text-slate-400 font-bold mb-8">버그 제로를 향한 무한 도전! 🦾</p>
             <button onclick="createNewProject()" class="bg-blue-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl hover:bg-blue-500 active:scale-95 transition-all">
                 🚀 새 작품 만들기
             </button>
         </div>
         
-        <div class="w-full max-w-4xl bg-white p-8 rounded-[40px] shadow-lg border border-slate-100">
+        <div class="w-full max-w-4xl bg-white p-8 rounded-[40px] shadow-lg border border-slate-100 overflow-y-auto max-h-[40vh]">
             <h2 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📁 나의 작품 리스트</h2>
             <div id="projectList" class="grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 
     <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-40">
-        <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+        <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20 shadow-sm">
             <button onclick="attemptExit()" class="text-xl font-black italic text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2">
                 <span>◀ 로비로 가기</span>
             </button>
@@ -52,16 +51,16 @@
         </header>
 
         <main class="flex flex-grow overflow-hidden relative">
-            <div id="blocklyArea" class="flex-grow bg-white">
+            <div id="blocklyArea" class="flex-grow bg-white relative">
                 <div id="blocklyDiv"></div>
             </div>
 
-            <div class="w-[400px] bg-slate-50 border-l p-4 flex flex-col gap-4 shadow-xl shrink-0">
+            <div class="w-[400px] bg-slate-50 border-l p-4 flex flex-col gap-4 shadow-xl">
                 <div class="bg-zinc-900 h-[220px] rounded-3xl flex items-center justify-center relative shadow-inner border-[6px] border-zinc-800 overflow-hidden">
                     <p id="robot" class="text-7xl relative" style="left: 0px; top: 0px; transition: left 0.3s;">🤖</p>
                 </div>
                 <div class="flex-grow bg-white rounded-2xl p-4 border shadow-sm flex flex-col">
-                    <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">실행 결과 창</p>
+                    <p class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">실행 로그</p>
                     <div id="console" class="flex-grow font-mono text-xs text-slate-600 overflow-y-auto space-y-1"></div>
                 </div>
             </div>
@@ -70,5 +69,44 @@
 
     <div id="exitWarningModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-[30px] shadow-2xl max-w-sm w-full text-center">
-            <h3 class="text-2xl font-black text-red-500 mb-2">⚠️ 잠깐만요!</h3>
-            <p class="text-slate-600 font-bold mb-8">저
+            <h3 class="text-2xl font-black text-red-500 mb-2">⚠️ 경고</h3>
+            <p class="text-slate-600 font-bold mb-8">저장하지 않으면 사라집니다!</p>
+            <div class="flex gap-2">
+                <button onclick="forceExit()" class="flex-1 bg-slate-200 py-3 rounded-xl font-bold text-slate-500">그냥 나가기</button>
+                <button onclick="closeExitWarningAndSave()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[30px] shadow-2xl max-w-sm w-full">
+            <h3 class="text-2xl font-black text-slate-800 mb-6 text-center">💾 작품 저장</h3>
+            <input id="projectNameInput" type="text" placeholder="작품 이름" class="w-full bg-slate-100 p-4 rounded-xl font-bold mb-6 outline-none border focus:border-blue-500">
+            <div class="flex gap-2">
+                <button onclick="closeSaveModal()" class="flex-1 bg-slate-200 py-3 rounded-xl font-bold">취소</button>
+                <button onclick="executeSave()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">저장 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <xml id="toolbox" style="display: none">
+        <category name="시작" colour="#ffbb00"><block type="when_run_clicked"></block></category>
+        <category name="동작" colour="#5b67a5">
+            <block type="move_robot_forward"><value name="STEPS"><shadow type="math_number"><field name="NUM">20</field></shadow></value></block>
+            <block type="move_robot_jump"></block>
+        </category>
+        <category name="변수" colour="#a55b80" custom="VARIABLE"></category>
+        <category name="리스트" colour="#a55b5b" custom="LIST"></category>
+    </xml>
+
+    <script>
+        let workspace = null;
+        let projects = JSON.parse(localStorage.getItem('jijon_projects')) || [];
+        let currentProjectId = null;
+        let isWorkspaceDirty = false;
+
+        // 블록 정의
+        Blockly.Blocks['when_run_clicked'] = { init: function() { this.appendDummyInput().appendField("▶ 시작하기를 눌렀을 때"); this.setNextStatement(true); this.setColour(45); } };
+        Blockly.JavaScript['when_run_clicked'] = function(block) { return ''; };
+        Blockly.Blocks['move_robot_forward'] = { init: function() { this.appendValueInput("STEPS").setCheck("Number").appendField("앞으로"); this.appendDummyInput().appendField("만큼 이동하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); this.setInputsInline(true); } };
+        Blockly.JavaScript['move_robot_forward'] = function(block) { let steps = Blockly.JavaScript.valueToCode(block, 'STEPS', Blockly.JavaScript.ORDER_ATOMIC) || '0'; return `moveRobotForward(${steps});\n`;
