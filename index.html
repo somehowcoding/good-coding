@@ -16,13 +16,11 @@
         body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f8fafc; overflow: hidden; height: 100vh; }
         .hidden { display: none !important; }
         
-        /* 블록리 스타일 */
         #blocklyArea { flex-grow: 1; position: relative; width: 100%; height: 100%; }
         #blocklyDiv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .blocklyToolboxDiv { background-color: #fff; border-right: 1px solid #e2e8f0; width: 110px !important; }
         .blocklyTreeLabel { font-weight: 700; font-size: 14px; padding: 10px 0; }
         
-        /* 애니메이션 */
         .jump-anim { animation: jump 0.3s ease; }
         @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-50px); } }
         .pop-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -31,33 +29,55 @@
 </head>
 <body class="flex flex-col">
 
-    <nav id="topNavbar" class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-50">
+    <div id="authScreen" class="h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative z-[100]">
+        <div class="text-center mb-10">
+            <h1 class="text-6xl font-black italic text-blue-600 mb-4">지존짱짱</h1>
+            <p class="text-slate-400 font-bold">코딩의 세계로 오신 것을 환영합니다! 🚀</p>
+        </div>
+        
+        <div class="bg-white p-10 rounded-[30px] shadow-xl w-[400px] border border-slate-100">
+            <div id="loginForm">
+                <h2 class="text-2xl font-black text-slate-800 mb-6">로그인</h2>
+                <input id="loginId" type="text" placeholder="아이디" class="w-full bg-slate-50 p-4 rounded-xl font-bold mb-3 outline-none border focus:border-blue-500">
+                <input id="loginPw" type="password" placeholder="비밀번호" class="w-full bg-slate-50 p-4 rounded-xl font-bold mb-6 outline-none border focus:border-blue-500">
+                <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-lg hover:bg-blue-500 transition-colors shadow-md mb-4">로그인하기</button>
+                <p class="text-center text-sm font-bold text-slate-400 cursor-pointer hover:text-blue-500" onclick="toggleAuth('signup')">계정이 없으신가요? 회원가입</p>
+            </div>
+
+            <div id="signupForm" class="hidden">
+                <h2 class="text-2xl font-black text-slate-800 mb-6">회원가입</h2>
+                <input id="signupId" type="text" placeholder="사용할 아이디" class="w-full bg-slate-50 p-4 rounded-xl font-bold mb-3 outline-none border focus:border-blue-500">
+                <input id="signupPw" type="password" placeholder="비밀번호" class="w-full bg-slate-50 p-4 rounded-xl font-bold mb-3 outline-none border focus:border-blue-500">
+                <input id="signupNick" type="text" placeholder="멋진 닉네임 (예: 어쩌다코딩)" class="w-full bg-slate-50 p-4 rounded-xl font-bold mb-6 outline-none border focus:border-blue-500">
+                <button onclick="signup()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black text-lg hover:bg-slate-700 transition-colors shadow-md mb-4">가입 완료하기</button>
+                <p class="text-center text-sm font-bold text-slate-400 cursor-pointer hover:text-blue-500" onclick="toggleAuth('login')">이미 계정이 있으신가요? 로그인</p>
+            </div>
+        </div>
+    </div>
+
+    <nav id="topNavbar" class="hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-50">
         <div class="flex items-center gap-8">
             <h1 onclick="showMain()" class="text-2xl font-black italic text-blue-600 cursor-pointer hover:opacity-80">지존짱짱</h1>
-            <button onclick="startApp()" class="font-bold text-slate-600 hover:text-blue-600 transition-colors">
-                ✨ 작품 만들기
-            </button>
+            <button onclick="startApp()" class="font-bold text-slate-600 hover:text-blue-600 transition-colors">✨ 작품 만들기</button>
         </div>
-        <div>
+        <div class="flex items-center gap-4">
             <button onclick="showMyPage()" class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full font-bold hover:bg-slate-200 transition-colors">
                 <span class="text-xl">👤</span>
-                <span class="text-slate-700">장예</span>
+                <span id="navNickname" class="text-slate-700">게스트</span>
             </button>
+            <button onclick="logout()" class="text-sm font-bold text-slate-400 hover:text-red-500">로그아웃</button>
         </div>
     </nav>
 
-    <div id="mainScreen" class="flex-grow overflow-y-auto p-10 bg-slate-50">
+    <div id="mainScreen" class="hidden flex-grow overflow-y-auto p-10 bg-slate-50">
         <div class="max-w-5xl mx-auto">
             <div class="mb-10 text-center">
                 <h2 class="text-4xl font-black text-slate-800 mb-2">모두의 멋진 작품을 만나보세요!</h2>
                 <p class="text-slate-500 font-bold">인기 만점 지존짱짱 프로젝트</p>
             </div>
-            
             <div class="grid grid-cols-4 gap-6">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-blue-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">🚀</div><h3 class="font-bold">우주 탐험 게임</h3><p class="text-xs text-slate-400">조회수 1.2만</p></div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-green-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">🐸</div><h3 class="font-bold">개구리 점프</h3><p class="text-xs text-slate-400">조회수 8,400</p></div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-purple-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">👾</div><h3 class="font-bold">괴물 피하기</h3><p class="text-xs text-slate-400">조회수 5,100</p></div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-yellow-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">🎨</div><h3 class="font-bold">마법의 그림판</h3><p class="text-xs text-slate-400">조회수 3,900</p></div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-blue-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">🚀</div><h3 class="font-bold">우주 탐험 게임</h3><p class="text-xs text-slate-400">제작: 마스터코더</p></div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border hover:-translate-y-1 transition-transform cursor-pointer"><div class="bg-green-100 h-32 rounded-xl mb-3 flex justify-center items-center text-4xl">🐸</div><h3 class="font-bold">개구리 점프</h3><p class="text-xs text-slate-400">제작: 초보개발자</p></div>
             </div>
         </div>
     </div>
@@ -67,7 +87,7 @@
             <div class="flex items-center gap-4 mb-8 border-b pb-6">
                 <div class="w-20 h-20 bg-blue-100 rounded-full flex justify-center items-center text-4xl">👤</div>
                 <div>
-                    <h2 class="text-3xl font-black text-slate-800">장예 님의 작업실</h2>
+                    <h2 id="myPageTitle" class="text-3xl font-black text-slate-800">나의 작업실</h2>
                     <p class="text-slate-500 font-bold mt-1">내가 만든 소중한 작품들이 모여있어요.</p>
                 </div>
             </div>
@@ -77,180 +97,4 @@
 
     <div id="workspaceScreen" class="hidden h-screen flex flex-col relative z-50 bg-white">
         <header class="h-14 bg-slate-800 text-white border-b flex items-center justify-between px-6 shadow-sm shrink-0">
-            <div class="flex items-center gap-4">
-                <button onclick="showMain()" class="text-sm font-bold text-slate-300 hover:text-white">◀ 나가기</button>
-                <span id="pName" class="font-bold">새 작품</span>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="saveProject()" class="bg-slate-600 px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-slate-500">💾 저장</button>
-                <button onclick="runCode()" class="bg-blue-500 px-6 py-1.5 rounded-lg font-black text-sm hover:bg-blue-400 shadow-md">▶ 실행</button>
-            </div>
-        </header>
-
-        <main class="flex flex-grow overflow-hidden relative">
-            <div id="blocklyArea">
-                <div id="blocklyDiv"></div>
-            </div>
-
-            <div class="w-[360px] bg-slate-50 border-l p-4 flex flex-col gap-3 shadow-xl shrink-0 z-10">
-                <div id="stage" class="bg-white h-52 rounded-2xl border-2 border-slate-200 overflow-hidden relative shadow-inner">
-                    <div id="robot" class="absolute text-5xl" style="left: 20px; top: 70px; transition: 0.3s;">🤖</div>
-                </div>
-                
-                <div class="bg-white p-2 rounded-xl border shadow-sm flex gap-2">
-                    <button onclick="addObject()" class="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg font-bold text-sm hover:bg-blue-100 transition-colors">
-                        ➕ 오브젝트 추가
-                    </button>
-                    <button onclick="clearObjects()" class="bg-red-50 text-red-500 px-3 py-2 rounded-lg font-bold text-sm hover:bg-red-100 transition-colors">
-                        🗑️ 비우기
-                    </button>
-                </div>
-
-                <div class="flex-grow bg-slate-800 rounded-2xl p-4 border shadow-inner flex flex-col overflow-hidden">
-                    <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Console Log</p>
-                    <div id="console" class="flex-grow font-mono text-[12px] text-green-400 overflow-y-auto space-y-1"></div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <xml id="toolbox" style="display: none">
-        <category name="시작" colour="#ffbb00"><block type="start"></block></category>
-        <category name="동작" colour="#5b67a5">
-            <block type="move"><value name="STEPS"><shadow type="math_number"><field name="NUM">20</field></shadow></value></block>
-            <block type="jump"></block>
-        </category>
-        <category name="제어" colour="#5ba55b"><block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">3</field></shadow></value></block></category>
-    </xml>
-
-    <script>
-        let workspace = null;
-        let projects = JSON.parse(localStorage.getItem('jijon_v3')) || [];
-        let currentId = null;
-        const objectEmojis = ['🐶', '🐱', '🦊', '🍎', '🚗', '👽', '👻', '🍕']; // 추가될 오브젝트들
-
-        // 블록 정의 (이전과 동일)
-        Blockly.Blocks['start'] = { init: function() { this.appendDummyInput().appendField("▶ 시작하기"); this.setNextStatement(true); this.setColour(45); } };
-        Blockly.JavaScript['start'] = function(block) { return ''; };
-        Blockly.Blocks['move'] = { init: function() { this.appendValueInput("STEPS").setCheck("Number").appendField("앞으로"); this.appendDummyInput().appendField("만큼 이동"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); this.setInputsInline(true); } };
-        Blockly.JavaScript['move'] = function(block) { return `move(${Blockly.JavaScript.valueToCode(block, 'STEPS', Blockly.JavaScript.ORDER_ATOMIC) || 0});\n`; };
-        Blockly.Blocks['jump'] = { init: function() { this.appendDummyInput().appendField("폴짝 점프하기"); this.setPreviousStatement(true); this.setNextStatement(true); this.setColour(230); } };
-        Blockly.JavaScript['jump'] = function(block) { return 'jump();\n'; };
-
-        // 1. 화면 전환 함수들
-        function showMain() {
-            document.getElementById('topNavbar').classList.remove('hidden');
-            document.getElementById('mainScreen').classList.remove('hidden');
-            document.getElementById('myPageScreen').classList.add('hidden');
-            document.getElementById('workspaceScreen').classList.add('hidden');
-        }
-
-        function showMyPage() {
-            document.getElementById('topNavbar').classList.remove('hidden');
-            document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('myPageScreen').classList.remove('hidden');
-            document.getElementById('workspaceScreen').classList.add('hidden');
-            renderMyProjects();
-        }
-
-        function startApp() {
-            document.getElementById('topNavbar').classList.add('hidden'); // 작업실에선 글로벌 메뉴 숨김
-            document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('myPageScreen').classList.add('hidden');
-            document.getElementById('workspaceScreen').classList.remove('hidden');
-            currentId = Date.now();
-            document.getElementById('pName').innerText = "새 작품";
-            
-            if (!workspace) {
-                workspace = Blockly.inject('blocklyDiv', {
-                    toolbox: document.getElementById('toolbox'), trashcan: true,
-                    grid: {spacing: 20, length: 3, colour: '#eee', snap: true}
-                });
-            }
-            workspace.clear();
-            setTimeout(() => { Blockly.svgResize(workspace); }, 100);
-        }
-
-        function openProject(id) {
-            const p = projects.find(proj => proj.id === id);
-            startApp();
-            currentId = p.id;
-            document.getElementById('pName').innerText = p.name;
-            setTimeout(() => {
-                workspace.clear();
-                Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(p.xml), workspace);
-                Blockly.svgResize(workspace);
-            }, 100);
-        }
-
-        // 2. 프로젝트 리스트 렌더링
-        function renderMyProjects() {
-            const list = document.getElementById('projectList');
-            if (projects.length === 0) {
-                list.innerHTML = "<div class='col-span-2 text-center py-16 bg-white rounded-3xl border'><p class='text-slate-400 font-bold'>아직 만든 작품이 없어요. 첫 작품을 만들어보세요!</p></div>";
-                return;
-            }
-            list.innerHTML = '';
-            projects.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "bg-white p-5 rounded-2xl border-2 border-transparent hover:border-blue-400 cursor-pointer shadow-sm flex items-center gap-4 transition-all";
-                div.innerHTML = `<div class="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center text-xl">📁</div><div class="flex-grow"><b class="text-lg text-slate-800">${p.name}</b><p class='text-xs text-slate-400'>${p.date}</p></div>`;
-                div.onclick = () => openProject(p.id);
-                list.appendChild(div);
-            });
-        }
-
-        // 3. 기능 함수들 (저장, 실행, 오브젝트 추가)
-        function saveProject() {
-            const name = prompt("작품 이름을 입력하세요:", document.getElementById('pName').innerText);
-            if (!name) return;
-            const xml = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
-            const data = { id: currentId, name, xml, date: new Date().toLocaleDateString() };
-            const idx = projects.findIndex(p => p.id === currentId);
-            if(idx >= 0) projects[idx] = data; else projects.push(data);
-            localStorage.setItem('jijon_v3', JSON.stringify(projects));
-            alert("💾 저장 완료!");
-            showMyPage();
-        }
-
-        function addObject() {
-            const stage = document.getElementById('stage');
-            const randomEmoji = objectEmojis[Math.floor(Math.random() * objectEmojis.length)];
-            const newObj = document.createElement('div');
-            newObj.className = "absolute text-4xl pop-anim";
-            
-            // 화면 안의 랜덤한 위치에 배치
-            const randomX = Math.floor(Math.random() * 250) + 10;
-            const randomY = Math.floor(Math.random() * 100) + 10;
-            
-            newObj.style.left = randomX + 'px';
-            newObj.style.top = randomY + 'px';
-            newObj.innerText = randomEmoji;
-            stage.appendChild(newObj);
-            
-            const log = document.getElementById('console');
-            log.innerHTML += `> 시스템: ${randomEmoji} 오브젝트가 추가되었습니다.<br>`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function clearObjects() {
-            const stage = document.getElementById('stage');
-            // 로봇 빼고 전부 지우기
-            stage.innerHTML = '<div id="robot" class="absolute text-5xl" style="left: 20px; top: 70px; transition: 0.3s;">🤖</div>';
-            document.getElementById('console').innerHTML += `> 시스템: 스테이지를 초기화했습니다.<br>`;
-        }
-
-        function runCode() {
-            const log = document.getElementById('console');
-            const robot = document.getElementById('robot');
-            log.innerHTML += "<br><span class='text-blue-300'>[▶ 실행 시작]</span><br>";
-            let pos = 20; robot.style.left = '20px';
-
-            window.move = (s) => { pos += Number(s); robot.style.left = pos + 'px'; log.innerHTML += `> 로봇이 ${s}만큼 전진함<br>`; log.scrollTop = log.scrollHeight; };
-            window.jump = () => { robot.classList.remove('jump-anim'); void robot.offsetWidth; robot.classList.add('jump-anim'); log.innerHTML += `> 로봇 점프 실행<br>`; log.scrollTop = log.scrollHeight; };
-
-            try { eval(Blockly.JavaScript.workspaceToCode(workspace)); } catch(e) { alert("코드 에러!"); }
-        }
-    </script>
-</body>
-</html>
+            <div
